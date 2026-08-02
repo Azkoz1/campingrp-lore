@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camping du Lac — Livret du campeur</title>
+</head>
+<body>
+<style>
+  :root{
+    --canvas:#e9ddc0;
+    --canvas-2:#ded0ac;
+    --pine:#2f4a3d;
+    --pine-deep:#1c2f27;
+    --ember:#c1622d;
+    --dusk:#1b2430;
+    --dusk-2:#0f151d;
+    --fog:#8a97a0;
+    --wound:#9a2b1f;
+    --paper-line: rgba(47,74,61,0.18);
+    --ink:#242017;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    line-height:1.65;
+    overflow-x:hidden;
+  }
+
+  ::selection{ background: var(--ember); color:#fff; }
+
+  .toc{
+    position:fixed;
+    top:0; right:0;
+    z-index:50;
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size:0.68rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background: rgba(233,221,192,0.9);
+    color: var(--pine-deep);
+    border-left:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line);
+    padding:0.6rem 0.9rem;
+    backdrop-filter: blur(2px);
+  }
+  .toc a{ color:inherit; text-decoration:none; display:block; padding:0.15rem 0; opacity:0.75; }
+  .toc a:hover, .toc a:focus-visible{ opacity:1; text-decoration:underline; }
+
+  section{
+    position:relative;
+    padding:5.5rem 1.5rem 6rem;
+    overflow:hidden;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    position:relative;
+    z-index:2;
+  }
+
+  /* --- treeline divider, no path data, just shaped repeats --- */
+  .treeline{
+    height:46px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:2px;
+    opacity:0.5;
+  }
+  .treeline span{
+    width:22px; height:100%;
+    background: currentColor;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  }
+  .treeline span:nth-child(2n){ height:70%; }
+  .treeline span:nth-child(3n){ height:85%; }
+
+  .eyebrow{
+    font-family:"Courier New", ui-monospace, monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--pine);
+    margin:0 0 0.6rem;
+    opacity:0.75;
+  }
+
+  h1,h2{
+    font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    font-weight:700;
+    text-wrap: balance;
+    margin:0 0 0.9rem;
+    color: var(--pine-deep);
+  }
+  h1{ font-size:clamp(2.1rem, 6vw, 3.1rem); letter-spacing:0.01em; }
+  h2{ font-size:clamp(1.35rem, 4vw, 1.7rem); }
+
+  .sub{
+    font-size:1.05rem;
+    font-style:italic;
+    color: var(--pine);
+    margin:0 0 2rem;
+    max-width:34ch;
+  }
+
+  p{ margin:0 0 1.1rem; }
+  p:last-child{ margin-bottom:0; }
+
+  .lede{ font-size:1.05rem; }
+
+  ul.amenities{
+    list-style:none;
+    margin:1.8rem 0 0;
+    padding:0;
+    display:grid;
+    gap:0.7rem;
+    border-top:1px solid var(--paper-line);
+    padding-top:1.4rem;
+  }
+  ul.amenities li{
+    display:flex;
+    gap:0.8rem;
+    font-size:0.95rem;
+  }
+  ul.amenities li b{
+    color: var(--pine-deep);
+    font-family:"Courier New", ui-monospace, monospace;
+    font-size:0.78rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    flex:0 0 auto;
+    padding-top:0.15rem;
+  }
+
+  .quote{
+    margin:1.6rem 0;
+    padding:0.2rem 0 0.2rem 1.1rem;
+    border-left:2px solid var(--ember);
+    font-style:italic;
+  }
+  .quote cite{
+    display:block;
+    margin-top:0.4rem;
+    font-style:normal;
+    font-family:"Courier New", ui-monospace, monospace;
+    font-size:0.72rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color: var(--pine);
+    opacity:0.7;
+  }
+
+  /* --- report insert --- */
+  .report{
+    font-family:"Courier New", ui-monospace, monospace;
+    background: rgba(0,0,0,0.03);
+    border:1px solid var(--paper-line);
+    padding:1.4rem 1.3rem;
+    font-size:0.86rem;
+    line-height:1.7;
+    position:relative;
+  }
+  .report .stamp{
+    display:inline-block;
+    border:2px solid var(--wound);
+    color: var(--wound);
+    padding:0.2rem 0.6rem;
+    font-size:0.68rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    transform: rotate(-3deg);
+    margin-bottom:1rem;
+  }
+  .report dl{ display:grid; grid-template-columns:auto 1fr; gap:0.25rem 0.9rem; margin:0 0 1.1rem; font-size:0.78rem; }
+  .report dt{ opacity:0.65; text-transform:uppercase; letter-spacing:0.04em; }
+  .report dt::after{ content:":"; }
+  .report .redacted{
+    background: var(--ink); color: var(--ink);
+    border-radius:2px;
+    user-select:none;
+  }
+
+  /* --- rumor fragments --- */
+  .fragments{ display:grid; gap:1.3rem; }
+  .fragment{
+    padding:1rem 1.1rem;
+    background: rgba(0,0,0,0.04);
+    border-left:2px solid var(--fog);
+  }
+  .fragment p{ font-size:0.95rem; font-style:italic; }
+  .fragment cite{
+    display:block; margin-top:0.5rem;
+    font-family:"Courier New", ui-monospace, monospace;
+    font-style:normal; font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:0.05em;
+    opacity:0.7;
+  }
+  .fragment.pinned{
+    font-family:"Courier New", ui-monospace, monospace;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    text-align:center;
+    border-left:none;
+    border:1px dashed var(--wound);
+    color: var(--wound);
+  }
+
+  .scratches{
+    position:absolute; inset:0;
+    pointer-events:none;
+    opacity:0.06;
+    background-image:
+      linear-gradient(105deg, transparent 46%, currentColor 47%, currentColor 48%, transparent 49%),
+      linear-gradient(100deg, transparent 56%, currentColor 57%, currentColor 57.6%, transparent 58.6%),
+      linear-gradient(110deg, transparent 66%, currentColor 66.7%, currentColor 67.4%, transparent 68.4%);
+  }
+
+  .signoff{
+    margin-top:2.2rem;
+    padding-top:1.4rem;
+    border-top:1px solid var(--fog);
+    font-size:0.88rem;
+    opacity:0.85;
+  }
+  .signoff .role{
+    display:block; margin-top:0.3rem;
+    font-family:"Courier New", ui-monospace, monospace;
+    font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase;
+    opacity:0.7;
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .ember-dot{ animation: flicker 3.2s ease-in-out infinite; }
+  }
+  @keyframes flicker{
+    0%,100%{ opacity:0.55; } 50%{ opacity:1; }
+  }
+
+  footer{
+    text-align:center;
+    padding:3rem 1.5rem 4rem;
+    font-family:"Courier New", ui-monospace, monospace;
+    font-size:0.7rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--fog);
+    background: var(--dusk-2);
+  }
+</style>
+
+<nav class="toc" aria-label="Sommaire">
+  <a href="#accueil">Accueil</a>
+  <a href="#jour1">L'arrivée</a>
+  <a href="#jour6">Une absence</a>
+  <a href="#jour9">Ce qu'on a retrouvé</a>
+  <a href="#rumeurs">Rumeurs</a>
+  <a href="#sentier">Le sentier</a>
+  <a href="#mot">Mot de la direction</a>
+</nav>
+
+<section id="accueil" style="background: var(--canvas); color: var(--ink);">
+  <div class="wrap">
+    <p class="eyebrow">Brochure officielle — saison d'été</p>
+    <h1>Camping&nbsp;du&nbsp;Lac</h1>
+    <p class="sub">Entre forêt centenaire et eau calme, un séjour dont vous vous souviendrez longtemps.</p>
+    <p class="lede">Bienvenue au camping du Lac. Niché au bord d'un lac aussi calme qu'un miroir et bordé par une forêt qui s'étend à perte de vue, notre domaine accueille chaque été les familles, les amoureux du grand air et les curieux en quête de tranquillité.</p>
+    <p>Ici, les journées se comptent en baignades, en parties de pêche et en soirées autour du feu. Les nuits, elles, appartiennent à la forêt — et nous vous invitons à les lui laisser.</p>
+    <ul class="amenities">
+      <li><b>Lac</b> Location de barques, coin pêche équipé, canne et appâts en vente à l'accueil.</li>
+      <li><b>Toboggans</b> Deux glissades aquatiques aménagées, bouées fournies sur place.</li>
+      <li><b>Boutique</b> L'accueil tient l'essentiel : boissons, en-cas, vêtements de rechange.</li>
+      <li><b>Soirées</b> Buvette animée chaque samedi, DJ résident jusqu'à la nuit tombée.</li>
+      <li><b>Sécurité</b> Une équipe assure des rondes discrètes, jour et nuit, sur l'ensemble du domaine.</li>
+      <li><b>Forêt</b> Sentiers balisés. Nous recommandons de rester sur les chemins marqués après la tombée de la nuit — simple prudence, comme partout en pleine nature.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="treeline" style="color: var(--pine);"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="jour1" style="background: var(--canvas-2); color: var(--ink);">
+  <div class="wrap">
+    <h2>L'arrivée</h2>
+    <p>Les premières tentes se montent avant midi. Les enfants courent déjà vers l'eau pendant que leurs parents négocient l'emplacement le plus à l'ombre. À la buvette, on ressert le café à ceux qui ont roulé toute la nuit pour arriver à temps.</p>
+    <div class="quote">
+      « Troisième été qu'on revient ici. C'est toujours pareil : dès qu'on pose le pied sur le camping, on se sent ailleurs. »
+      <cite>Térésa, 34 ans — troisième saison</cite>
+    </div>
+    <p>Le soir venu, le premier feu de camp de la saison réunit une trentaine de campeurs. On se raconte les news de l'année, on refait connaissance. Personne, ce soir-là, ne pense à la forêt qui borde le camp — sombre, immobile, silencieuse.</p>
+  </div>
+</section>
+
+<div class="treeline" style="color: var(--pine);"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="jour6" style="background:#c9baa1; color: var(--ink);">
+  <div class="wrap">
+    <h2>Une absence</h2>
+    <p>Au petit matin, la famille du chalet 12 signale l'absence d'un des leurs. Le jeune homme était parti seul en début de soirée pour « marcher un peu près du lac » et n'a pas reparu.</p>
+    <p>La direction se veut rassurante : il ne serait pas le premier campeur à repartir sans prévenir, agacé par une dispute de couple ou simplement lassé plus tôt que prévu. L'équipe de sécurité effectue tout de même une ronde élargie, jusqu'à la lisière du bois, sans rien trouver de particulier.</p>
+    <div class="quote">
+      « On m'a dit de ne pas m'inquiéter, que ça arrivait tout le temps. Mais il avait laissé son sac, ses affaires, même son téléphone sur la table du chalet. »
+      <cite>Un proche du disparu, resté anonyme</cite>
+    </div>
+  </div>
+</section>
+
+<div class="treeline" style="color: var(--pine-deep);"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="jour9" style="background:#8b8266; color:#241f14;">
+  <div class="wrap">
+    <h2>Ce qu'on a retrouvé</h2>
+    <p>Ce que la direction espérait ne jamais avoir à communiquer a fini par filtrer. Voici, tel que transmis à l'équipe de sécurité, l'essentiel du rapport interne rédigé après la découverte à la lisière nord du bois.</p>
+    <div class="report">
+      <span class="stamp">Diffusion restreinte</span>
+      <dl>
+        <dt>Origine</dt><dd>Sécurité du camping</dd>
+        <dt>Lieu</dt><dd>Lisière nord, à 40 m du dernier sentier balisé</dd>
+        <dt>Découvert par</dt><dd><span class="redacted">████████</span>, agent de sécurité</dd>
+        <dt>Transmis à</dt><dd>Gendarmerie — sans suite publique à ce jour</dd>
+      </dl>
+      <p>Corps retrouvé partiellement dissimulé sous des branchages, dans un état de délabrement qu'aucun animal recensé dans la région ne peut raisonnablement expliquer. Plaies profondes, arrachements musculaires nets, aucune trace de morsure compatible avec un sanglier, un chien errant ou tout autre prédateur connu du secteur.</p>
+      <p>L'aide-soignant appelé sur place a refusé de signer le constat initial, déclarant « n'avoir jamais rien vu de tel ». Sur ordre de la direction, l'incident n'a pas été communiqué aux vacanciers afin de « ne pas alimenter la panique ». Le camping reste ouvert.</p>
+    </div>
+  </div>
+  <div class="scratches" style="color:#241f14;"></div>
+</section>
+
+<div class="treeline" style="color:#3a3226;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="rumeurs" style="background:#4a4436; color:#efe6cf;">
+  <div class="wrap">
+    <p class="eyebrow">Autour du feu de camp</p>
+    <h2>Ce qu'on raconte</h2>
+    <p>Rien n'est officiel. Mais entre deux bûches, les langues se délient.</p>
+    <div class="fragments">
+      <div class="fragment">
+        <p>« Mon grand-père parlait déjà de bruits dans ce bois, certains soirs. On riait bien de lui, à l'époque. »</p>
+        <cite>Un pêcheur, habitué du lac depuis vingt ans</cite>
+      </div>
+      <div class="fragment">
+        <p>« J'ai relevé des traces, cette semaine-là. Pas des traces qu'on a l'habitude de voir par ici. Elles s'arrêtaient net, à une dizaine de mètres du sentier, sans aucune explication. »</p>
+        <cite>Un agent de sécurité, off the record</cite>
+      </div>
+      <div class="fragment">
+        <p>« On a entendu un truc hurler, cette nuit-là. Mon père dit que c'est un cerf qui brame. Un cerf, ça braille pas comme ça. »</p>
+        <cite>Un adolescent du chalet 7</cite>
+      </div>
+      <div class="fragment">
+        <p>« La direction nous a demandé de verrouiller systématiquement les poubelles le soir, même celles de l'intérieur. Consigne bizarre, mais bon, c'est pas à moi de discuter. »</p>
+        <cite>Une employée de la boutique</cite>
+      </div>
+      <div class="fragment pinned">
+        Ne sortez pas seuls la nuit.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="treeline" style="color:#231f18;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="sentier" style="background: var(--dusk); color:#dbe0e4;">
+  <div class="wrap">
+    <h2>Le sentier interdit</h2>
+    <p>Un petit groupe de randonneurs, mené par un campeur du nom de Manu, s'écarte un instant du sentier balisé pour couper au plus court vers le lac. Ils tombent sur une formation rocheuse qu'aucune carte du camping ne mentionne : un renfoncement dans la roche, à moitié dissimulé par la végétation, comme repoussé de l'intérieur plutôt qu'effondré naturellement.</p>
+    <p>De longues entailles marquent la pierre à l'entrée — trop régulières pour l'érosion, trop profondes pour un outil. Avant que quiconque n'ait pu s'aventurer plus loin, l'équipe de sécurité boucle le secteur dans l'heure. Raison officielle : « risque d'éboulement ». Un grillage et un cadenas condamnent désormais l'accès. Un garde y est posté en permanence depuis.</p>
+    <div class="quote">
+      « On n'a rien vu de spécial, franchement. Juste un trou dans la roche. Mais ils sont venus vite. Beaucoup trop vite pour un simple risque d'éboulement. »
+      <cite>Manu, campeur</cite>
+    </div>
+  </div>
+</section>
+
+<section id="mot" style="background: var(--dusk-2); color:#c7ccd1;">
+  <div class="wrap">
+    <p class="eyebrow">Mot de la direction</p>
+    <h2>Le séjour continue</h2>
+    <p>Le camping du Lac reste ouvert. Les activités se poursuivent comme chaque été : baignades, pêche, soirées à la buvette. Nous ne changerons rien à l'esprit de cet endroit pour quelques rumeurs de coin de feu.</p>
+    <p>Nous avons simplement renforcé les rondes de nuit et avançons le couvre-feu recommandé à 23h pour les abords de la forêt. Ce ne sont là que des précautions ordinaires.</p>
+    <p>Si, une nuit, vous entendez quelque chose bouger entre les arbres — un souffle, un pas trop lourd, un hurlement qui ne ressemble à rien de connu — la meilleure chose à faire est probablement de rentrer sous la tente et de ne pas vérifier.</p>
+    <p>Certaines réponses, ici, valent peut-être moins cher que le doute.</p>
+    <div class="signoff">
+      Bon séjour à tous.
+      <span class="role">— La Direction, Camping du Lac</span>
+    </div>
+  </div>
+</section>
+
+<footer>Livret remis à l'accueil · Camping du Lac <span class="ember-dot">●</span></footer>
+</body>
+</html>
